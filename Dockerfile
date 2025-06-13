@@ -4,8 +4,16 @@
 
 FROM python:3.11-slim
 
+# Create non-root user and directory
+RUN mkdir -p /app && \
+    useradd -m appuser && \
+    chown -R appuser:appuser /app
+
+# Copy Pipfiles
 COPY Pipfile* /app/
-WORKDIR /app/
+WORKDIR /app
+
+# Install system dependencies and Python packages
 RUN apt update && \
     apt install -y jq gcc libpq5 libpq-dev libmagic1 && \
     jq -r '.default | to_entries[] | .key + .value.version' Pipfile.lock > requirements.txt && \
@@ -14,6 +22,7 @@ RUN apt update && \
 RUN pip install -r requirements.txt && \
     apt remove -y jq gcc
 
+# Copy application files
 COPY classquiz/ /app/classquiz/
 COPY image_cleanup.py /app/image_cleanup.py
 COPY alembic.ini /app/
@@ -21,9 +30,16 @@ COPY migrations/ /app/migrations/
 COPY *start.sh /app/
 COPY gunicorn_conf.py /app/
 
-
+# Expose port 80
 EXPOSE 80
+
+# Set environment variables
 ENV PYTHONPATH=/app
 RUN chmod +x start.sh
 ENV APP_MODULE=classquiz:app
+
+# Switch to non-root user
+USER appuser
+
+# Start the application
 CMD ["./start.sh"]
