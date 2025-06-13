@@ -1,0 +1,127 @@
+# Global settings
+global:
+  imageRegistry: "image-registry.openshift-image-registry.svc:5000"
+  imagePullSecrets: []
+  storageClass: "standard"  # Change this to your OpenShift storage class
+
+# Frontend configuration
+frontend:
+  image:
+    repository: classquiz/frontend
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  route:
+    host: classquiz.example.com  # Change this to your domain
+    tls:
+      enabled: true
+      termination: edge
+
+# API configuration
+api:
+  image:
+    repository: classquiz/api
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  route:
+    host: api.classquiz.example.com  # Change this to your domain
+    tls:
+      enabled: true
+      termination: edge
+  config:
+    rootAddress: "https://classquiz.example.com"
+    secretKey: "CHANGE_THIS_SECRET_KEY"
+    maxWorkers: "1"
+    accessTokenExpireMinutes: 30
+    skipEmailVerification: "True"
+    storageBackend: "local"
+    storagePath: "/app/data"
+
+# Worker configuration
+worker:
+  image:
+    repository: classquiz/api  # Uses same image as API
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Redis configuration
+redis:
+  image:
+    repository: redis
+    tag: alpine
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# PostgreSQL configuration
+postgresql:
+  image:
+    repository: postgres
+    tag: 14-alpine
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  database: classquiz
+  username: postgres
+  password: classquiz  # Change this in production
+  persistence:
+    size: 10Gi
+
+# Meilisearch configuration
+meilisearch:
+  image:
+    repository: getmeili/meilisearch
+    tag: v0.28.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  persistence:
+    size: 10Gi
+
+# Storage configuration
+storage:
+  uploads:
+    enabled: true
+    size: 20Gi
+    accessMode: ReadWriteMany

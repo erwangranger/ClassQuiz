@@ -1,0 +1,30 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your ClassQuiz application is being deployed to OpenShift.
+
+To verify the deployment, run:
+  oc get pods -n {{ .Release.Namespace }}
+
+To access the application:
+  Frontend: https://{{ .Values.frontend.route.host }}
+  API: https://{{ .Values.api.route.host }}
+
+To check the status of your deployment:
+  oc get routes -n {{ .Release.Namespace }}
+  oc get services -n {{ .Release.Namespace }}
+  oc get pvc -n {{ .Release.Namespace }}
+
+To view the logs:
+  Frontend: oc logs -f deployment/{{ include "classquiz.fullname" . }}-frontend -n {{ .Release.Namespace }}
+  API: oc logs -f deployment/{{ include "classquiz.fullname" . }}-api -n {{ .Release.Namespace }}
+  Worker: oc logs -f deployment/{{ include "classquiz.fullname" . }}-worker -n {{ .Release.Namespace }}
+
+To upgrade the application:
+  helm upgrade {{ .Release.Name }} ./classquiz
+
+To uninstall the application:
+  helm uninstall {{ .Release.Name }}
+  oc delete pvc --selector=app.kubernetes.io/instance={{ .Release.Name }} -n {{ .Release.Namespace }}
+
+For more information about ClassQuiz, visit:
+  https://github.com/erwangranger/ClassQuiz

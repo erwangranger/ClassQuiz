@@ -1,0 +1,32 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "classquiz.fullname" . }}-frontend
+  labels:
+    {{- include "classquiz.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  host: {{ .Values.frontend.route.host }}
+  to:
+    kind: Service
+    name: {{ include "classquiz.fullname" . }}-frontend
+    weight: 100
+  port:
+    targetPort: http
+  {{- if .Values.frontend.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.frontend.route.tls.termination }}
+    {{- if eq .Values.frontend.route.tls.termination "reencrypt" }}
+    destinationCACertificate: {{ .Values.frontend.route.tls.destinationCACertificate | quote }}
+    {{- end }}
+    {{- if .Values.frontend.route.tls.certificate }}
+    certificate: {{ .Values.frontend.route.tls.certificate | quote }}
+    {{- end }}
+    {{- if .Values.frontend.route.tls.key }}
+    key: {{ .Values.frontend.route.tls.key | quote }}
+    {{- end }}
+    {{- if .Values.frontend.route.tls.caCertificate }}
+    caCertificate: {{ .Values.frontend.route.tls.caCertificate | quote }}
+    {{- end }}
+  {{- end }}
+  wildcardPolicy: None

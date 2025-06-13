@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "classquiz.fullname" . }}-worker
+  labels:
+    {{- include "classquiz.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      {{- include "classquiz.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "classquiz.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          image: "{{ include "classquiz.image" (dict "repository" .Values.worker.image.repository "tag" .Values.worker.image.tag) }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          command: ["arq"]
+          args: ["classquiz.worker.WorkerSettings"]
+          env:
+            - name: DB_URL
+              value: "postgresql://{{ .Values.postgresql.username }}:{{ .Values.postgresql.password }}@{{ include "classquiz.fullname" . }}-postgresql:5432/{{ .Values.postgresql.database }}"
+            - name: REDIS
+              value: "redis://{{ include "classquiz.fullname" . }}-redis:6379/0?decode_responses=True"
+            - name: SECRET_KEY
+              value: {{ .Values.api.config.secretKey | quote }}
+            - name: MAX_WORKERS
+              value: {{ .Values.api.config.maxWorkers | quote }}
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              value: {{ .Values.api.config.accessTokenExpireMinutes | quote }}
+            - name: MEILISEARCH_URL
+              value: "http://{{ include "classquiz.fullname" . }}-meilisearch:7700"
+            - name: ROOT_ADDRESS
+              value: {{ .Values.api.config.rootAddress | quote }}
+            - name: STORAGE_BACKEND
+              value: {{ .Values.api.config.storageBackend | quote }}
+            - name: STORAGE_PATH
+              value: {{ .Values.api.config.storagePath | quote }}
+            - name: SKIP_EMAIL_VERIFICATION
+              value: {{ .Values.api.config.skipEmailVerification | quote }}
+          {{- if eq .Values.api.config.storageBackend "local" }}
+          volumeMounts:
+            - name: uploads
+              mountPath: {{ .Values.api.config.storagePath }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            capabilities:
+              drop:
+                - ALL
+      {{- if eq .Values.api.config.storageBackend "local" }}
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: {{ include "classquiz.fullname" . }}-uploads
+      {{- end }}
+      securityContext:
+        fsGroup: 1001
