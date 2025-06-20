@@ -1,0 +1,31 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: classquiz-backend
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/erwangranger/ClassQuiz.git
+      ref: main
+    contextDir: .
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python:3.9
+        namespace: openshift
+      env:
+        - name: PIPENV_VENV_IN_PROJECT
+          value: "true"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: classquiz-backend:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+    - type: GitHub
+      github:
+        secret: github-webhook-secret

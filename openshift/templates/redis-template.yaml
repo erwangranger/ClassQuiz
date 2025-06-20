@@ -1,0 +1,100 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: classquiz-redis-template
+  annotations:
+    description: "Redis deployment for ClassQuiz application"
+    tags: "redis,database"
+parameters:
+- name: STORAGE_CLASS
+  description: Storage class for Redis PVC
+  value: standard
+  required: true
+- name: REDIS_IMAGE
+  description: Redis image to use
+  value: redis:7
+  required: true
+- name: REDIS_MEMORY_LIMIT
+  description: Memory limit for Redis container
+  value: "512Mi"
+- name: REDIS_CPU_LIMIT
+  description: CPU limit for Redis container
+  value: "500m"
+objects:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: redis-data
+    labels:
+      app: classquiz-redis
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: ${STORAGE_CLASS}
+
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: redis
+    labels:
+      app: classquiz-redis
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: classquiz-redis
+    template:
+      metadata:
+        labels:
+          app: classquiz-redis
+      spec:
+        containers:
+        - name: redis
+          image: ${REDIS_IMAGE}
+          ports:
+          - containerPort: 6379
+          volumeMounts:
+          - name: redis-data
+            mountPath: /data
+          resources:
+            limits:
+              cpu: ${REDIS_CPU_LIMIT}
+              memory: ${REDIS_MEMORY_LIMIT}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: redis
+    labels:
+      app: classquiz-redis
+  spec:
+    type: ClusterIP
+    ports:
+    - port: 6379
+      targetPort: 6379
+    selector:
+      app: classquiz-redis
+
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: redis-network-policy
+    labels:
+      app: classquiz-redis
+  spec:
+    podSelector:
+      matchLabels:
+        app: classquiz-redis
+    policyTypes:
+    - Ingress
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: classquiz-backend
+      ports:
+      - protocol: TCP
+        port: 6379

@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: classquiz-frontend
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/erwangranger/ClassQuiz.git
+      ref: main
+    contextDir: frontend
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:18
+        namespace: openshift
+  output:
+    to:
+      kind: ImageStreamTag
+      name: classquiz-frontend:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+    - type: GitHub
+      github:
+        secret: github-webhook-secret

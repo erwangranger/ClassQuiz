@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: classquiz-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: classquiz-backend
+  template:
+    metadata:
+      labels:
+        app: classquiz-backend
+    spec:
+      containers:
+      - name: backend
+        image: classquiz-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GUNICORN_CMD_ARGS
+          value: "--bind=0.0.0.0:8000 --workers=4 --threads=2"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
