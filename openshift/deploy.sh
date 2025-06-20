@@ -254,6 +254,8 @@ log "Frontend deployed and verified successfully"
 
 # Step 5: Verification
 log "Starting comprehensive verification steps..."
+log "Cleaning up evicted/errored pods..."
+oc get pods -n $NAMESPACE --field-selector=status.phase=Failed -o jsonpath='{.items[*].metadata.name}' | xargs -r oc delete pod -n $NAMESPACE || log "Warning: Failed to clean up failed pods"
 log "Checking pod status..."
 oc get pods -n $NAMESPACE || error_exit "Failed to get pod status" $READINESS_ERROR
 

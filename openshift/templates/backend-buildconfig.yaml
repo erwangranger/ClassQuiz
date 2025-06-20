@@ -14,7 +14,7 @@ spec:
     sourceStrategy:
       from:
         kind: DockerImage
-        name: registry.access.redhat.com/ubi8/python-39
+        name: registry.access.redhat.com/ubi8/python-311
       env:
         - name: PIPENV_VENV_IN_PROJECT
           value: "true"
