@@ -2,6 +2,29 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
 line-length = 120
 target-version = ["py310"]
+
+[project]
+name = "classquiz"
+version = "0.1.0"
+description = "ClassQuiz application"
+authors = [
+    {name = "Marlon W", email = "git@mawoka.eu"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+packages = ["classquiz"]
+package-dir = {"" = "."}

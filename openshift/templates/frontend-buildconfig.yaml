@@ -7,7 +7,7 @@ spec:
     type: Git
     git:
       uri: https://github.com/erwangranger/ClassQuiz.git
-      ref: main
+      ref: master
     contextDir: frontend
   strategy:
     type: Source
