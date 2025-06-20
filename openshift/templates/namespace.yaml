@@ -3,7 +3,7 @@ kind: Template
 metadata:
   name: classquiz-namespace
   annotations:
-    description: "Template for creating the classquiz namespace with labels and optional quotas"
+    description: "Template for creating the classquiz namespace with labels and resource quotas"
     tags: "namespace,classquiz"
 objects:
 - apiVersion: v1
@@ -16,15 +16,6 @@ objects:
     annotations:
       openshift.io/description: "Namespace for ClassQuiz application"
       openshift.io/display-name: "ClassQuiz"
-- apiVersion: v1
-  kind: ResourceQuota
-  metadata:
-    name: classquiz-quota
-    namespace: ${NAMESPACE}
-  spec:
-    hard:
-      ${QUOTA_SPEC}
-
 parameters:
 - name: NAMESPACE
   description: "The name of the namespace to create"
@@ -34,16 +25,11 @@ parameters:
   description: "The environment (dev, test, prod)"
   value: dev
   required: true
-- name: QUOTA_SPEC
-  description: "Resource quota specification in YAML format (leave empty for no quota)"
-  value: ""
-  required: false
 
 message: |-
   Namespace ${NAMESPACE} has been processed:
   - Created/validated namespace with labels and annotations
-  ${QUOTA_STATUS}
+  - Created/validated namespace with labels and annotations
 
 post:
 - oc get namespace ${NAMESPACE} -o yaml
-- oc get resourcequota -n ${NAMESPACE}

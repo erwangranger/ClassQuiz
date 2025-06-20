@@ -13,9 +13,8 @@ spec:
     type: Source
     sourceStrategy:
       from:
-        kind: ImageStreamTag
-        name: nodejs:18
-        namespace: openshift
+        kind: DockerImage
+        name: docker.io/library/node:20
   output:
     to:
       kind: ImageStreamTag

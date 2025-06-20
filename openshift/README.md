@@ -109,13 +109,22 @@ curl -I http://$(oc get route classquiz-frontend -o jsonpath='{.spec.host}')
 
 ## Maintenance
 
-1. To trigger a new build:
+1. To trigger a new build and follow the logs (recommended for debugging):
+```bash
+# Frontend build with log streaming
+oc start-build classquiz-frontend --follow
+
+# Backend build with log streaming
+oc start-build classquiz-backend --follow
+```
+
+2. To trigger a new build without following logs:
 ```bash
 oc start-build classquiz-frontend
 oc start-build classquiz-backend
 ```
 
-2. To scale deployments:
+3. To scale deployments:
 ```bash
 oc scale deployment/classquiz-frontend --replicas=3
 oc scale deployment/classquiz-backend --replicas=3
