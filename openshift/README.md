@@ -8,6 +8,14 @@
 
 ## Deployment Steps
 
+### 0. Create Namespace (Idempotent)
+```bash
+# Create namespace with optional quotas (can be run multiple times)
+oc process -f openshift/templates/namespace.yaml \
+  -p NAMESPACE=classquiz \
+  -p ENVIRONMENT=dev | oc apply -f -
+```
+
 ### 1. Create Build Configurations
 ```bash
 # Frontend build
@@ -112,6 +120,23 @@ oc start-build classquiz-backend
 oc scale deployment/classquiz-frontend --replicas=3
 oc scale deployment/classquiz-backend --replicas=3
 ```
+
+## Idempotency Guarantees
+
+This deployment is designed to be idempotent - it can be safely run multiple times without side effects:
+
+1. Namespace creation:
+   - Will create if not exists
+   - Will update labels/annotations if changed
+   - Will preserve existing resources
+
+2. Resource deployments:
+   - Will update configurations if changed
+   - Will maintain existing pods and services
+   - Will preserve persistent data
+
+3. Build configurations:
+   - Will trigger new builds only if source changes
 
 ## Best Practices
 

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: meilisearch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: meilisearch-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: meilisearch-role-binding
+subjects:
+- kind: ServiceAccount
+  name: meilisearch
+roleRef:
+  kind: Role
+  name: meilisearch-role
+  apiGroup: rbac.authorization.k8s.io
